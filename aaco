@@ -1,0 +1,97 @@
+Enter file contents here%Ant Colony Optimization To solve Travling Sales man problem
+
+interCity_distances=[0 100 175 100 75; 100 0 50 75 125;175 50 0 100 125;100 75 100 0 50;75 125 125 50 0];
+interCity_pheromon=ones(5)*0.01;
+
+optimal_distance_traveled=100000;
+optimal_path=[0 0 0 0 0];
+ 
+total_cities=5;
+total_ants=4;
+max_itrations=10000;
+
+alpha=3;    %pheromone influence on direction
+beta=2;     %influence of adject node distance
+rho=0.01;   %pheromone decrease factor
+Q=2.0;      %pheromone increase factor
+
+max_value=1000;
+ 
+for itrations=1:max_itrations
+    
+    for ant=1:total_ants     
+                            probabilty_nextCity=[0 0 0 0 0];
+                            index_nextCity=1;
+                            sum_of_probabilities=0;
+                            city_visted=[1 1 1 1 1];
+                            path_taken=[0 0 0 0 0];
+                            
+                            startCity=randi([1, total_cities]);
+                            city_visted(startCity)=0;
+                            path_taken(1)=startCity;
+
+                            i=startCity;
+                            
+                            new_distance_traveled=0;
+                            highest_city_probability=0;
+
+
+                            for allCityVisted=1:(total_cities-1),
+
+                                  for j=1:total_cities,
+                                            
+                                      if(i~=j)
+                                          probabilty_nextCity(j)=(1/(interCity_distances(i,j)^beta))*(interCity_pheromon(i,j)^alpha)*city_visted(j);
+                                      end
+                                      
+                                      if(i==j)
+                                          probabilty_nextCity(j)=0;
+                                      end
+                                      
+%                                           if(probabilty_nextCity(j)<0.0001)
+%                                               probabilty_nextCity(j)=0.0001;
+%                                           end
+%                                           
+%                                           if(probabilty_nextCity(j)>max_value)
+%                                               probabilty_nextCity(j)=max_value;
+%                                           end                                        
+                                        
+                                        
+                                  end
+                                                                    
+                                  sum_of_probabilities=sum(probabilty_nextCity);
+                                  
+                                  for j=1:total_cities,
+                                      
+                                      if(probabilty_nextCity(j)/sum_of_probabilities>highest_city_probability)
+                                                highest_city_probability=probabilty_nextCity(j)/sum_of_probabilities;
+                                                index_nextCity=j;
+                                      end
+                                      
+                                  end
+                                  
+                                  city_visted(index_nextCity)=0;
+                                  new_distance_traveled=new_distance_traveled+interCity_distances(i,index_nextCity);
+                                  path_taken(allCityVisted+1)=index_nextCity;
+                                  i=index_nextCity;
+                                  highest_city_probability=0;
+
+                            end
+                            
+                            %UPDATING THE PHEROMONS
+                                                       
+                            interCity_pheromon=interCity_pheromon*(1-rho);   %decrease_pheromones
+                            
+                            for l=1:total_cities-1,
+                                interCity_pheromon(path_taken(l),path_taken(l+1))=interCity_pheromon(path_taken(l),path_taken(l+1))+Q/interCity_distances(path_taken(l),path_taken(l+1));%increase_pheromones
+                                interCity_pheromon(path_taken(l+1),path_taken(l))=interCity_pheromon(path_taken(l),path_taken(l+1));
+                            end
+                            
+    end
+                            
+             
+             if(optimal_distance_traveled>new_distance_traveled)
+                 optimal_distance_traveled=new_distance_traveled
+                 optimal_path=path_taken;
+             end
+ end
